@@ -9,7 +9,7 @@ WS_PATH_DEFAULT='sba'
 WORK_DIR='/etc/sba'
 TEMP_DIR='/tmp/sba'
 TLS_SERVER=addons.mozilla.org
-CDN_DOMAIN=("skk.moe" "cfip.xxxxxxxx.tk" "cm.yutian.us.kg" "fan.yutian.us.kg" "xn--b6gac.eu.org" "dash.cloudflare.com" "visa.com")
+CDN_DOMAIN=("skk.moe" "ip.sb" "time.is" "cfip.xxxxxxxx.tk" "bestcf.top" "cdn.2020111.xyz" "xn--b6gac.eu.org")
 SUBSCRIBE_TEMPLATE="https://raw.githubusercontent.com/fscarmen/client_template/main"
 METRICS_PORT='3014'
 
@@ -208,9 +208,22 @@ check_chatgpt() {
 
 # 脚本当天及累计运行次数统计
 statistics_of_run-times() {
-  local COUNT=$(wget -qO- --tries=2 --timeout=2 "https://hit.forvps.gq/https://raw.githubusercontent.com/fscarmen/sba/main/sba.sh" 2>&1 | grep -m1 -oE "[0-9]+[ ]+/[ ]+[0-9]+") &&
-  TODAY=$(awk -F ' ' '{print $1}' <<< "$COUNT") &&
-  TOTAL=$(awk -F ' ' '{print $3}' <<< "$COUNT")
+  local SCRIPT=sba.sh
+  local RESPONSE1=$(wget -qO- --timeout=3 "https://us-central1-script-usage-statistics.cloudfunctions.net/updateStats?script=${SCRIPT}" | grep 'todayCount')
+
+  if [[ $RESPONSE1 =~ \"todayCount\":([0-9]+),\"totalCount\":([0-9]+) ]]; then
+    TODAY="${BASH_REMATCH[1]}"
+    TOTAL="${BASH_REMATCH[2]}"
+  else
+    local RESPONSE2=$(wget -qO- --timeout=3 "https://hit.forvps.gq/updateStats?script=${SCRIPT}")
+    if [[ $RESPONSE2 =~ \"todayCount\":([0-9]+),\"totalCount\":([0-9]+) ]]; then
+      TODAY="${BASH_REMATCH[1]}"
+      TOTAL="${BASH_REMATCH[2]}"
+    else
+      TODAY=""
+      TOTAL=""
+    fi
+  fi
 }
 
 # 选择中英语言
